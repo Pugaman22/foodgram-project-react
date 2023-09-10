@@ -140,10 +140,7 @@ class IngredientsRecipe(models.Model):
         verbose_name_plural = 'List of ingredients for recipes'
 
     def __str__(self):
-        return (
-            f'{self.ingredient}'
-            f'{self.quantity}'
-        )
+        return f'{self.ingredient} - {self.quantity}'
 
 
 class TagsRecipe(models.Model):

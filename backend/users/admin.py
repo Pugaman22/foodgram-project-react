@@ -10,7 +10,7 @@ class UserAdmin(admin.ModelAdmin):
     list_display = ('id', 'username', 'email', 'first_name', 'last_name')
     list_filter = ('username', 'first_name', 'last_name')
     search_fields = ('username', 'first_name', 'last_name')
-    ordering = ('username')
+    ordering = ('username',)
 
 
 @admin.register(Subscription)

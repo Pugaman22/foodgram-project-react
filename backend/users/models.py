@@ -15,7 +15,7 @@ class User(AbstractUser):
         verbose_name='Login',
         validators=[
             RegexValidator(
-                regex=r'^[\w.@+-]+\z',
+                regex=r'^[\w.@+-]+$',
                 message='Use characters from this list [a-zA-Z0-9_-+.]',
             ),
         ]
