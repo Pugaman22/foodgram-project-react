@@ -257,7 +257,7 @@ class RecipePostSerializer(serializers.ModelSerializer):
             cooking_time=cooking_time,
         )
         recipe = self.add_tags_and_ingredients(tags, ingredients, recipe)
-        print("1"*30)
+        print("1" * 30)
         print(recipe.ingredients)
         return recipe
 
