@@ -1,6 +1,6 @@
 from django.contrib import admin
 from foodgram.models import (Ingredient, Recipe, Tag, IngredientsRecipe,
-                             TagsRecipe, FavoriteRecipe, PurchasingList)
+                             TagsRecipe, Favorite, PurchasingList)
 
 
 @admin.register(Tag)
@@ -12,7 +12,7 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'units',)
+    list_display = ('id', 'name', 'measurement_unit',)
     search_fields = ('name',)
     list_filter = ('name',)
 
@@ -26,7 +26,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(IngredientsRecipe)
 class IngredientsRecipeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'recipe', 'ingredient', 'quantity',)
+    list_display = ('id', 'recipe', 'ingredient', 'amount',)
     list_filter = ('recipe', 'ingredient')
 
 
@@ -36,7 +36,7 @@ class TagsRecipeAdmin(admin.ModelAdmin):
     list_filter = ('recipe', 'tag')
 
 
-@admin.register(FavoriteRecipe)
+@admin.register(Favorite)
 class FavoriteRecipeAdmin(admin.ModelAdmin):
     list_display = ('id', 'recipe', 'user',)
     list_filter = ('recipe', 'user',)

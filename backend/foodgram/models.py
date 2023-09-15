@@ -36,7 +36,7 @@ class Ingredient(models.Model):
         max_length=100,
         verbose_name='ingredient name',
     )
-    units = models.CharField(
+    measurement_unit = models.CharField(
         max_length=20,
         verbose_name='unit of measurement',
     )
@@ -46,19 +46,13 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ingredients'
 
     def __str__(self):
-        return f'{self.name} - {self.units}'
+        return f'{self.name} - {self.measurement_unit}'
 
 
 class Recipe(models.Model):
     '''Recipes model.'''
-    name = models.CharField(
-        max_length=200,
-        verbose_name='recipe name',
-    )
-    description = models.TextField(
-        'recipe description',
-        help_text='Write a description'
-    )
+    name = models.CharField(max_length=200,verbose_name='recipe name',)
+    description = models.TextField('recipe description',help_text='Write a description')
     author = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -121,7 +115,7 @@ class IngredientsRecipe(models.Model):
         related_name='ingredients_list',
         verbose_name='Recipe',
     )
-    quantity = models.SmallIntegerField(
+    amount = models.SmallIntegerField(
         validators=[MinValueValidator(
             1,
             message='Minimaum value is 1!',
@@ -172,33 +166,30 @@ class TagsRecipe(models.Model):
         return f'{self.tag} - {self.recipe}'
 
 
-class FavoriteRecipe(models.Model):
-    '''Favorite recipes.'''
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name='favorite',
-        verbose_name='favorite recipe',
-    )
+
+class Favorite(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='favorite',
+        verbose_name='пользователь',
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.DO_NOTHING,
+        related_name='favorites',
+        verbose_name='рецепт',
     )
 
     class Meta:
+        verbose_name = 'Избранное'
+        verbose_name_plural='Избранное'
         constraints = [
             models.UniqueConstraint(
-                fields=('recipe', 'user',),
-                name='unique_favorite_recipes',
-            ),
+                fields=['user', 'recipe'],
+                name='unique_favorite'
+            )
         ]
-        ordering = ['-recipe']
-        verbose_name = 'Favorite recipe'
-        verbose_name_plural = 'Favorite recipes'
 
-    def __str__(self):
-        return f'{self.recipe} - {self.user}'
 
 
 class PurchasingList(models.Model):
@@ -229,3 +220,4 @@ class PurchasingList(models.Model):
 
     def __str__(self):
         return f'{self.recipe} - {self.user}'
+

@@ -44,26 +44,52 @@ class User(AbstractUser):
         return self.username
 
 
-class Subscription(models.Model):
+# class Subscription(models.Model):
+#     author = models.ForeignKey(
+#         User,
+#         on_delete=models.CASCADE,
+#         related_name='recipe_author'
+#     )
+#     user = models.ForeignKey(
+#         User,
+#         on_delete=models.CASCADE,
+#         related_name='subscriber'
+#     )
+
+#     class Meta:
+#         verbose_name_plural = 'Subscriptions'
+#         constraints = [
+#             models.UniqueConstraint(
+#                 fields=['author', 'user'],
+#                 name='unique_author_and_subscriber'
+#             )
+#         ]
+
+#     def __str__(self):
+#         return f'{self.user} subscribed on {self.author}'
+
+
+class Follow(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='recipe_author'
+        related_name='following',
+        verbose_name='автор',
     )
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='subscriber'
+        related_name='follower',
+        verbose_name='подписчик',
     )
 
     class Meta:
-        verbose_name_plural = 'Subscriptions'
         constraints = [
             models.UniqueConstraint(
                 fields=['author', 'user'],
-                name='unique_author_and_subscriber'
+                name='unique_follow',
             )
         ]
 
     def __str__(self):
-        return f'{self.user} subscribed on {self.author}'
+        return f'{self.user} follows {self.author}'
