@@ -51,8 +51,10 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     '''Recipes model.'''
-    name = models.CharField(max_length=200,verbose_name='recipe name',)
-    description = models.TextField('recipe description',help_text='Write a description')
+    name = models.CharField(max_length=200,
+                            verbose_name='recipe name',)
+    description = models.TextField('recipe description',
+                                   help_text='Write a description')
     author = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -166,7 +168,6 @@ class TagsRecipe(models.Model):
         return f'{self.tag} - {self.recipe}'
 
 
-
 class Favorite(models.Model):
     user = models.ForeignKey(
         User,
@@ -181,15 +182,14 @@ class Favorite(models.Model):
     )
 
     class Meta:
-        verbose_name = 'Избранное'
-        verbose_name_plural='Избранное'
+        verbose_name = 'Favorite'
+        verbose_name_plural = 'Favorites'
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'],
                 name='unique_favorite'
             )
         ]
-
 
 
 class PurchasingList(models.Model):
@@ -220,4 +220,3 @@ class PurchasingList(models.Model):
 
     def __str__(self):
         return f'{self.recipe} - {self.user}'
-
