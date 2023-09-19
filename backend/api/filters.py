@@ -1,30 +1,19 @@
-import django_filters
-from distutils.util import strtobool
-from rest_framework import filters
-
-from foodgram.models import Recipe, PurchasingList, Favorite
-
-CHOICES = (
-    ('0', 'False'),
-    ('1', 'True')
-)
+from django_filters import rest_framework as filters
+from foodgram.models import PurchasingList, Recipe
+from rest_framework.filters import SearchFilter
 
 
-class RecipeFilter(django_filters.FilterSet):
-    author = django_filters.CharFilter(
+class RecipeFilter(filters.FilterSet):
+    author = filters.CharFilter(
         field_name='author__id',
     )
-    tags = django_filters.AllValuesMultipleFilter(
+    tags = filters.AllValuesMultipleFilter(
         field_name='tags__slug',
     )
-    is_favorited = django_filters.TypedChoiceFilter(
-        choices=CHOICES,
-        coerce=strtobool,
+    is_favorited = filters.BooleanFilter(
         method='get_is_favorited'
     )
-    is_in_shopping_cart = django_filters.TypedChoiceFilter(
-        choices=CHOICES,
-        coerce=strtobool,
+    is_in_shopping_cart = filters.BooleanFilter(
         method='get_is_in_shopping_cart'
     )
 
@@ -37,22 +26,17 @@ class RecipeFilter(django_filters.FilterSet):
     def get_is_favorited(self, queryset, name, value):
         if not value:
             return queryset
-        favorites = Favorite.objects.filter(user=self.request.user)
-        return queryset.filter(
-            pk__in=(favorite.recipe.pk for favorite in favorites)
-        )
+        user = self.request.user
+        return queryset.filter(favorites__user=user)
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         if not value:
             return queryset
-        try:
-            carts = PurchasingList.objects.filter(user=self.request.user)
-        except PurchasingList.DoesNotExist:
-            return queryset
+        carts = PurchasingList.objects.filter(user=self.request.user)
         return queryset.filter(
             pk__in=(cart.recipe.pk for cart in carts)
         )
 
 
-class IngredientFilter(filters.SearchFilter):
+class IngredientFilter(SearchFilter):
     search_param = 'name'

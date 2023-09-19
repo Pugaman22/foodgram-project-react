@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
+
 from users.models import Follow
 
 User = get_user_model()
@@ -12,12 +13,6 @@ class UserAdmin(admin.ModelAdmin):
     search_fields = ('username', 'first_name', 'last_name')
     ordering = ('username',)
 
-
-# @admin.register(Subscription)
-# class SubscriptionAdmin(admin.ModelAdmin):
-#     list_display = ('id', 'author', 'user',)
-#     list_filter = ('author', 'user',)
-#     search_fields = ('author', 'user',)
 
 @admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):

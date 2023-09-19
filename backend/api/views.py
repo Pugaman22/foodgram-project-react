@@ -1,40 +1,29 @@
 from http import HTTPStatus
-from django.db import IntegrityError
-from django.http import HttpResponse
+from typing import Any
 
-from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
-from .serializers import (FavoriteSerializer, FollowSerializer,
-                          PurchasingListSerializer, RecipeGetSerializer,
-                          RecipePostSerializer, RecipeSerializer,
-                          TagSerializer, IngredientSerializer)
-from .permissions import IsAuthenticated, IsAuthorOrReadOnly
-from .filters import RecipeFilter
-from foodgram.models import (Favorite, IngredientsRecipe, PurchasingList, Tag,
-                             Ingredient, Recipe)
-from users.models import Follow
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.pagination import PageNumberPagination
+from django.db import IntegrityError
+from django.db.models import Exists, OuterRef, Value
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from foodgram.models import (Favorite, Ingredient, IngredientsRecipe,
+                             PurchasingList, Recipe, Tag)
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import mixins, viewsets
 from rest_framework.views import APIView
+from users.models import Follow
+
+from .fav_cart_base_view_set import FavoriteCartBaseViewSet
+from .filters import RecipeFilter
+from .pagination import PageLimitPagination
+from .permissions import IsAuthorOrReadOnly
+from .serializers import (FavoriteSerializer, FollowSerializer,
+                          IngredientSerializer, PurchasingListSerializer,
+                          RecipeGetSerializer, RecipePostSerializer,
+                          TagSerializer)
 
 User = get_user_model()
-
-
-class CreateDestroyViewSet(mixins.CreateModelMixin,
-                           mixins.DestroyModelMixin,
-                           viewsets.GenericViewSet):
-    pass
-
-
-class PageLimitPagination(PageNumberPagination):
-    page_size = 6
-    page_size_query_param = 'limit'
-
-
-class RecipesLimitPagination(PageNumberPagination):
-    page_size_query_param = 'recipes_limit'
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -48,11 +37,32 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all()
     permission_classes = (IsAuthorOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
-    filter_class = RecipeFilter
+    filterset_class = RecipeFilter
     pagination_class = PageLimitPagination
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            favorited = Favorite.objects.filter(
+                    user=self.request.user,
+                    recipe=OuterRef('pk')
+                )
+            in_cart = PurchasingList.objects.filter(
+                    user=self.request.user,
+                    recipe=OuterRef('pk')
+                )
+            queryset = Recipe.objects.all().select_related(
+                'author').prefetch_related('tags').annotate(
+                is_favorited=Exists(favorited)).annotate(
+                    is_in_shopping_cart=Exists(in_cart))
+
+        else:
+            print("not authenticated")
+            queryset = Recipe.objects.all().select_related(
+                'author').prefetch_related('tags').annotate(
+                    is_favorited=Value(False)).annotate(
+                        is_in_shopping_cart=Value(False))
+        return queryset
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -69,7 +79,6 @@ class FollowViewSet(viewsets.ModelViewSet):
     pagination_class = PageLimitPagination
 
     def get_queryset(self):
-        # return Follow.objects.filter(following__user=self.request.user)
         return Follow.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
@@ -79,14 +88,14 @@ class FollowViewSet(viewsets.ModelViewSet):
         )
         if author == request.user:
             return Response(
-                'Нельзя подписываться на себя',
+                'You cannot subscribe on yourself',
                 status=HTTPStatus.BAD_REQUEST
             )
         try:
-            Follow.objects.create(author=author, user=self.request.user)
+            Follow.objects.get_or_create(author=author, user=self.request.user)
         except IntegrityError:
             return Response(
-                'Вы уже подписаны на данного автора',
+                'You have been already subscribed on this author.',
                 status=HTTPStatus.BAD_REQUEST
             )
         follow = get_object_or_404(
@@ -113,81 +122,23 @@ class FollowViewSet(viewsets.ModelViewSet):
         return Response(status=HTTPStatus.NO_CONTENT)
 
 
-class FavoriteViewSet(CreateDestroyViewSet):
+class FavoriteViewSet(FavoriteCartBaseViewSet):
     serializer_class = FavoriteSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        return Favorite.objects.filter(user=self.request.user)
-
-    def create(self, request, *args, **kwargs):
-        recipe = get_object_or_404(
-            Recipe,
-            id=self.kwargs.get('recipe_id')
-        )
-        Favorite.objects.create(
-            user=request.user,
-            recipe=recipe
-        )
-        serializer = RecipeSerializer(
-            recipe,
-            many=False
-        )
-        return Response(
-            data=serializer.data,
-            status=HTTPStatus.CREATED
-        )
-
-    def delete(self, request, *args, **kwargs):
-        recipe = get_object_or_404(
-            Recipe,
-            id=self.kwargs.get('recipe_id')
-        )
-        get_object_or_404(
-            Favorite,
-            user=request.user,
-            recipe=recipe
-        ).delete()
-        return Response(status=HTTPStatus.NO_CONTENT)
+    def __init__(self,  **kwargs: Any) -> None:
+        super().__init__(Favorite, **kwargs)
 
 
-class PurchasingListViewSet(viewsets.ModelViewSet):
+class PurchasingListViewSet(FavoriteCartBaseViewSet):
     serializer_class = PurchasingListSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        return PurchasingList.objects.filter(user=self.request.user)
-
-    def create(self, request, *args, **kwargs):
-        recipe = get_object_or_404(
-            Recipe,
-            id=self.kwargs.get('recipe_id')
-        )
-        try:
-            PurchasingList.objects.create(user=self.request.user,
-                                          recipe=recipe)
-        except IntegrityError:
-            return Response(
-                'Этот рецепт уже в списке покупок',
-                status=HTTPStatus.BAD_REQUEST
-            )
-        serializer = RecipeSerializer(recipe, many=False)
-        return Response(data=serializer.data, status=HTTPStatus.CREATED)
-
-    def delete(self, request, *args, **kwargs):
-        recipe = get_object_or_404(
-            Recipe,
-            id=self.kwargs.get('recipe_id')
-        )
-        get_object_or_404(
-            PurchasingList,
-            user=request.user,
-            recipe=recipe
-        ).delete()
-        return Response(status=HTTPStatus.NO_CONTENT)
+    def __init__(self,  **kwargs: Any) -> None:
+        super().__init__(PurchasingList, **kwargs)
 
 
-class ShoppingListViewSet(APIView):
+class ShoppingCartViewSet(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
