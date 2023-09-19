@@ -44,13 +44,13 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if self.request.user.is_authenticated:
             favorited = Favorite.objects.filter(
-                    user=self.request.user,
-                    recipe=OuterRef('pk')
-                )
+                user=self.request.user,
+                recipe=OuterRef('pk')
+            )
             in_cart = PurchasingList.objects.filter(
-                    user=self.request.user,
-                    recipe=OuterRef('pk')
-                )
+                user=self.request.user,
+                recipe=OuterRef('pk')
+            )
             queryset = Recipe.objects.all().select_related(
                 'author').prefetch_related('tags').annotate(
                 is_favorited=Exists(favorited)).annotate(
@@ -126,7 +126,7 @@ class FavoriteViewSet(FavoriteCartBaseViewSet):
     serializer_class = FavoriteSerializer
     permission_classes = (IsAuthenticated,)
 
-    def __init__(self,  **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(Favorite, **kwargs)
 
 
@@ -134,7 +134,7 @@ class PurchasingListViewSet(FavoriteCartBaseViewSet):
     serializer_class = PurchasingListSerializer
     permission_classes = (IsAuthenticated,)
 
-    def __init__(self,  **kwargs: Any) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(PurchasingList, **kwargs)
 
 

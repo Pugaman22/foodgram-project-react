@@ -118,7 +118,7 @@ class IngredientsRecipe(models.Model):
         verbose_name='Recipe',
     )
     amount = models.SmallIntegerField(
-        validators=[MinValueValidator(1,message='Minimaum value is 1!',)],
+        validators=[MinValueValidator(1, message='Minimaum value is 1!',)],
         verbose_name='Ingredient quantity',
     )
 
