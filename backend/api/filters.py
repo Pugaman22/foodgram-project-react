@@ -1,5 +1,5 @@
 from django_filters import rest_framework as filters
-from foodgram.models import PurchasingList, Recipe
+from recipes.models import PurchasingList, Recipe
 from rest_framework.filters import SearchFilter
 
 

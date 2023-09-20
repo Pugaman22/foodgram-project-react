@@ -7,7 +7,7 @@ User = get_user_model()
 
 
 class Tag(models.Model):
-    '''Tags model.'''
+    """Tags model."""
     name = models.CharField(
         max_length=50,
         unique=True,
@@ -31,7 +31,7 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
-    '''Ingredients model.'''
+    """Ingredients model."""
     name = models.CharField(
         max_length=100,
         verbose_name='ingredient name',
@@ -50,7 +50,7 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
-    '''Recipes model.'''
+    """Recipes model."""
     name = models.CharField(max_length=200,
                             verbose_name='recipe name',)
     description = models.TextField('recipe description',
@@ -104,7 +104,7 @@ class Recipe(models.Model):
 
 
 class IngredientsRecipe(models.Model):
-    '''Model is linking recipe and ingredients.'''
+    """Model is linking recipe and ingredients."""
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
@@ -136,7 +136,7 @@ class IngredientsRecipe(models.Model):
 
 
 class TagsRecipe(models.Model):
-    '''Model is linking recipe and tags.'''
+    """Model is linking recipe and tags."""
     tag = models.ForeignKey(
         Tag,
         on_delete=models.CASCADE,
@@ -165,6 +165,7 @@ class TagsRecipe(models.Model):
 
 
 class Favorite(models.Model):
+    """Model of favorite recipes."""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -172,7 +173,7 @@ class Favorite(models.Model):
     )
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.DO_NOTHING,
+        on_delete=models.CASCADE,
         related_name='favorites',
         verbose_name='рецепт',
     )
@@ -189,7 +190,7 @@ class Favorite(models.Model):
 
 
 class PurchasingList(models.Model):
-    '''List of purchased recipes.'''
+    """List of purchased recipes."""
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,

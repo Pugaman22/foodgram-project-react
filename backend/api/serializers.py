@@ -7,8 +7,8 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
-from foodgram.models import (Favorite, Ingredient, IngredientsRecipe,
-                             PurchasingList, Recipe, Tag, TagsRecipe)
+from recipes.models import (Favorite, Ingredient, IngredientsRecipe,
+                            PurchasingList, Recipe, Tag, TagsRecipe)
 from rest_framework import serializers
 from users.models import Follow
 

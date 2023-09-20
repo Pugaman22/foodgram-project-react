@@ -6,8 +6,8 @@ from django.db import IntegrityError
 from django.db.models import Exists, OuterRef, Value
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from foodgram.models import (Favorite, Ingredient, IngredientsRecipe,
-                             PurchasingList, Recipe, Tag)
+from recipes.models import (Favorite, Ingredient, IngredientsRecipe,
+                            PurchasingList, Recipe, Tag)
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response

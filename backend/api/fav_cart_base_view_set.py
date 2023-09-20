@@ -4,7 +4,7 @@ from typing import Any
 
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from foodgram.models import Recipe
+from recipes.models import Recipe
 from rest_framework import mixins, viewsets
 from rest_framework.response import Response
 
