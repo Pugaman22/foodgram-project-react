@@ -54,7 +54,7 @@ class RecipeManagerForRelatedFields(models.Manager):
 
     def get_queryset(self):
         return Recipe.objects.all().select_related(
-                'author').prefetch_related('tags')
+            'author').prefetch_related('tags')
 
     def fill_favs_and_in_cart(self, user):
         if user.is_authenticated:
