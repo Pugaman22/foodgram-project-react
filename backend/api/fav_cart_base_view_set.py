@@ -1,8 +1,5 @@
-
 from http import HTTPStatus
-from typing import Any
 
-from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from recipes.models import Recipe
 from rest_framework import mixins, viewsets
@@ -17,12 +14,7 @@ class CreateDestroyViewSet(mixins.CreateModelMixin,
     pass
 
 
-class FavoriteCartBaseViewSet(CreateDestroyViewSet):
-
-    def __init__(self, model, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self.model = model
-
+class RelationBaseViewSet(CreateDestroyViewSet):
     def get_queryset(self):
         return self.model.objects.filter(user=self.request.user)
 
@@ -31,12 +23,12 @@ class FavoriteCartBaseViewSet(CreateDestroyViewSet):
             Recipe,
             id=self.kwargs.get('recipe_id')
         )
-        try:
-            self.model.objects.create(user=self.request.user,
-                                      recipe=recipe)
-        except IntegrityError:
+        o, created = self.model.objects.get_or_create(
+            user=self.request.user,
+            recipe=recipe)
+        if not created:
             return Response(
-                'Этот рецепт уже добавлен',
+                'This recipe has already been added.',
                 status=HTTPStatus.BAD_REQUEST
             )
         serializer = RecipeSerializer(recipe, many=False)

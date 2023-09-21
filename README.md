@@ -19,6 +19,6 @@ Python
 ---
   Admin
 
-  password: andy123andy
+  password: 123andy1123
   
-  login: andy
+  login: andy1

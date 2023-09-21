@@ -2,6 +2,7 @@ from colorfield.fields import ColorField
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import Exists, OuterRef
 
 User = get_user_model()
 
@@ -49,8 +50,34 @@ class Ingredient(models.Model):
         return f'{self.name} - {self.measurement_unit}'
 
 
+class RecipeManagerForRelatedFields(models.Manager):
+
+    def get_queryset(self):
+        return Recipe.objects.all().select_related(
+                'author').prefetch_related('tags')
+
+    def fill_favs_and_in_cart(self, user):
+        if user.is_authenticated:
+            favorited = Favorite.objects.filter(
+                user=user,
+                recipe=OuterRef('pk')
+            )
+            in_cart = PurchasingList.objects.filter(
+                user=user,
+                recipe=OuterRef('pk')
+            )
+            return self.get_queryset().annotate(
+                is_favorited=Exists(favorited)).annotate(
+                    is_in_shopping_cart=Exists(in_cart))
+
+        else:
+            return self.get_queryset()
+
+
 class Recipe(models.Model):
     """Recipes model."""
+    objects = models.Manager()
+    objects_with_related_fields = RecipeManagerForRelatedFields()
     name = models.CharField(max_length=200,
                             verbose_name='recipe name',)
     description = models.TextField('recipe description',

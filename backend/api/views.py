@@ -1,20 +1,17 @@
 from http import HTTPStatus
-from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
-from django.db.models import Exists, OuterRef, Value
-from django.http import HttpResponse
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404
-from recipes.models import (Favorite, Ingredient, IngredientsRecipe,
-                            PurchasingList, Recipe, Tag)
+from recipes.models import Favorite, Ingredient, PurchasingList, Recipe, Tag
 from rest_framework import viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from users.models import Follow
 
-from .fav_cart_base_view_set import FavoriteCartBaseViewSet
+from .fav_cart_base_view_set import RelationBaseViewSet
 from .filters import RecipeFilter
 from .pagination import PageLimitPagination
 from .permissions import IsAuthorOrReadOnly
@@ -22,6 +19,7 @@ from .serializers import (FavoriteSerializer, FollowSerializer,
                           IngredientSerializer, PurchasingListSerializer,
                           RecipeGetSerializer, RecipePostSerializer,
                           TagSerializer)
+from .services import get_shopping_list
 
 User = get_user_model()
 
@@ -42,27 +40,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = PageLimitPagination
 
     def get_queryset(self):
-        if self.request.user.is_authenticated:
-            favorited = Favorite.objects.filter(
-                user=self.request.user,
-                recipe=OuterRef('pk')
-            )
-            in_cart = PurchasingList.objects.filter(
-                user=self.request.user,
-                recipe=OuterRef('pk')
-            )
-            queryset = Recipe.objects.all().select_related(
-                'author').prefetch_related('tags').annotate(
-                is_favorited=Exists(favorited)).annotate(
-                    is_in_shopping_cart=Exists(in_cart))
+        if self.request.method == 'GET':
+            return Recipe.objects_with_related_fields.fill_favs_and_in_cart(
+                self.request.user)
 
-        else:
-            print("not authenticated")
-            queryset = Recipe.objects.all().select_related(
-                'author').prefetch_related('tags').annotate(
-                    is_favorited=Value(False)).annotate(
-                        is_in_shopping_cart=Value(False))
-        return queryset
+        return Recipe.objects.all()
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -71,6 +53,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    @action(methods=["get"], detail=False)
+    def download_shopping_cart(self, request):
+        return FileResponse(
+            get_shopping_list(request.user),
+            content_type='text/plain,charset=utf8',
+            as_attachment=True, filename="cart.txt"
+        )
 
 
 class FollowViewSet(viewsets.ModelViewSet):
@@ -122,50 +112,13 @@ class FollowViewSet(viewsets.ModelViewSet):
         return Response(status=HTTPStatus.NO_CONTENT)
 
 
-class FavoriteViewSet(FavoriteCartBaseViewSet):
+class FavoriteViewSet(RelationBaseViewSet):
+    model = Favorite
     serializer_class = FavoriteSerializer
     permission_classes = (IsAuthenticated,)
 
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(Favorite, **kwargs)
 
-
-class PurchasingListViewSet(FavoriteCartBaseViewSet):
+class PurchasingListViewSet(RelationBaseViewSet):
+    model = PurchasingList
     serializer_class = PurchasingListSerializer
     permission_classes = (IsAuthenticated,)
-
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(PurchasingList, **kwargs)
-
-
-class ShoppingCartViewSet(APIView):
-    permission_classes = (IsAuthenticated,)
-
-    def get(self, request):
-        user = request.user
-        carts = PurchasingList.objects.filter(user=user)
-        recipes = [cart.recipe for cart in carts]
-        cart = {}
-        for recipe in recipes:
-            for ingredient in recipe.ingredients.all():
-                amount = get_object_or_404(
-                    IngredientsRecipe,
-                    recipe=recipe,
-                    ingredient=ingredient
-                ).amount
-                if ingredient.name not in cart:
-                    cart[ingredient.name] = amount
-                else:
-                    cart[ingredient.name] += amount
-        content = ''
-        for item in cart:
-            units = get_object_or_404(
-                Ingredient,
-                name=item
-            ).measurement_unit
-            content += f'{item}: {cart[item]}{units}\n'
-        response = HttpResponse(
-            content, content_type='text/plain,charset=utf8'
-        )
-        response['Content-Disposition'] = 'attachment; filename="cart.txt"'
-        return response
