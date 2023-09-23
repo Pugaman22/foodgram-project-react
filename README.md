@@ -22,3 +22,6 @@ Python
   password: 123andy1123
   
   login: andy1
+
+  доступен по ip: http://158.160.8.118/
+  
