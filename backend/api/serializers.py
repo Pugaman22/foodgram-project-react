@@ -164,6 +164,26 @@ class RecipePostSerializer(serializers.ModelSerializer):
         return instance
 
 
+class FollowCreateSerializer(serializers.ModelSerializer):
+    def validate_author_id(self, author_id):
+        print("validate_author_id", author_id)
+        return author_id
+
+    def validate(self, data):
+        print("validate", data.keys())
+        author_id = self.context["author_id"]
+        request = self.context["request"]
+        if author_id == request.user.id:
+            raise serializers.ValidationError(
+                'You cannot subscribe on yourself'
+            )
+        return data
+
+    class Meta:
+        model = Follow
+        fields = ('author_id',)
+
+
 class FollowSerializer(serializers.ModelSerializer):
     """Serializer for Follow model."""
     is_subscribed = serializers.SerializerMethodField()
@@ -177,6 +197,20 @@ class FollowSerializer(serializers.ModelSerializer):
         source='author.recipes.count',
         read_only=True
     )
+
+    def validate_id(self, id):
+        print("validate_id")
+
+    def validate(self, data):
+        print("validate")
+        author = get_object_or_404(
+            User,
+            id=id
+        )
+        if author == self.request.user:
+            raise serializers.ValidationError(
+                'You cannot subscribe on yourself')
+        return data
 
     class Meta:
         model = Follow
