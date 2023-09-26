@@ -50,34 +50,29 @@ class Ingredient(models.Model):
         return f'{self.name} - {self.measurement_unit}'
 
 
-class RecipeManagerForRelatedFields(models.Manager):
+class RecipeManager(models.Manager):
 
     def get_queryset(self):
-        return Recipe.objects.all().select_related(
+        qs = super().get_queryset() 
+        return qs.select_related(
             'author').prefetch_related('tags')
 
     def fill_favs_and_in_cart(self, user):
-        if user.is_authenticated:
-            favorited = Favorite.objects.filter(
-                user=user,
-                recipe=OuterRef('pk')
-            )
-            in_cart = PurchasingList.objects.filter(
-                user=user,
-                recipe=OuterRef('pk')
-            )
-            return self.get_queryset().annotate(
-                is_favorited=Exists(favorited)).annotate(
-                    is_in_shopping_cart=Exists(in_cart))
+        favorited = Favorite.objects.filter(
+            recipe=OuterRef('pk')
+        )
+        in_cart = PurchasingList.objects.filter(
+            recipe=OuterRef('pk')
+        )
+        return self.get_queryset().annotate(
+            is_favorited=Exists(favorited)).annotate(
+                is_in_shopping_cart=Exists(in_cart))
 
-        else:
-            return self.get_queryset()
 
 
 class Recipe(models.Model):
     """Recipes model."""
-    objects = models.Manager()
-    objects_with_related_fields = RecipeManagerForRelatedFields()
+    objects = RecipeManager()
     name = models.CharField(max_length=200,
                             verbose_name='recipe name',)
     description = models.TextField('recipe description',
