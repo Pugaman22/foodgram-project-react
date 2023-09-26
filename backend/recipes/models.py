@@ -69,7 +69,6 @@ class RecipeManager(models.Manager):
                 is_in_shopping_cart=Exists(in_cart))
 
 
-
 class Recipe(models.Model):
     """Recipes model."""
     objects = RecipeManager()

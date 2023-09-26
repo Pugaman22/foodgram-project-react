@@ -19,12 +19,12 @@ class RecipeFilter(filters.FilterSet):
 
     def get_is_favorited(self, queryset, name, value):
         if not value:
-            return queryset  
+            return queryset
         return queryset.filter(pk=value)
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         if not value:
-            return queryset 
+            return queryset
         carts = PurchasingList.objects.all()
         return queryset.filter(
             pk__in=(cart.recipe.pk for cart in carts)
