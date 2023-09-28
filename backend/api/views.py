@@ -2,24 +2,22 @@ from django.contrib.auth import get_user_model
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from recipes.models import Favorite, Ingredient, PurchasingList, Recipe, Tag
-from rest_framework import viewsets, status
-from rest_framework.generics import ListAPIView
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
 from users.models import Follow
 
 from .fav_cart_base_view_set import RelationBaseViewSet
-from .filters import RecipeFilter, IngredientFilter
+from .filters import IngredientFilter, RecipeFilter
 from .pagination import PageLimitPagination
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (FavoriteSerializer,
-                          IngredientSerializer, SubscribeListSerializer,
-                          SubscribeSerializer,
+from .serializers import (FavoriteSerializer, IngredientSerializer,
                           PurchasingListSerializer, RecipeGetSerializer,
-                          RecipePostSerializer, TagSerializer)
+                          RecipePostSerializer, SubscribeListSerializer,
+                          SubscribeSerializer, TagSerializer)
 from .services import get_shopping_list
 
 User = get_user_model()
@@ -29,7 +27,6 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
-    # permission_classes = (AllowAny,)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -94,7 +91,6 @@ class MainSubscribeViewSet(APIView):
     serializer_class = SubscribeSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = PageLimitPagination
-    # pagination_class = CustomPagination
 
     def post(self, request, *args, **kwargs):
         user_id = self.kwargs.get('user_id')

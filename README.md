@@ -23,5 +23,7 @@ Python
   
   login: andy1
 
-  доступен по ip: http://158.160.8.118/
+  доступен по ip: https://158.160.8.118/
   
+oleg@mail.ru
+123oleg123
