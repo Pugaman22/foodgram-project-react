@@ -1,5 +1,3 @@
-from http import HTTPStatus
-
 from django.contrib.auth import get_user_model
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
@@ -17,8 +15,9 @@ from .fav_cart_base_view_set import RelationBaseViewSet
 from .filters import RecipeFilter, IngredientFilter
 from .pagination import PageLimitPagination
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (FavoriteSerializer, 
-                          IngredientSerializer,SubscribeListSerializer,SubscribeSerializer,
+from .serializers import (FavoriteSerializer,
+                          IngredientSerializer, SubscribeListSerializer,
+                          SubscribeSerializer,
                           PurchasingListSerializer, RecipeGetSerializer,
                           RecipePostSerializer, TagSerializer)
 from .services import get_shopping_list
@@ -69,7 +68,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         )
 
 
-
 class FavoriteViewSet(RelationBaseViewSet):
     model = Favorite
     serializer_class = FavoriteSerializer
@@ -82,8 +80,6 @@ class PurchasingListViewSet(RelationBaseViewSet):
     permission_classes = (IsAuthenticated,)
 
 
-
-
 class SubscribeListView(ListAPIView):
     """Список покупок"""
     serializer_class = SubscribeListSerializer
@@ -91,7 +87,6 @@ class SubscribeListView(ListAPIView):
 
     def get_queryset(self):
         return Follow.objects.filter(user=self.request.user)
-    
 
 
 class MainSubscribeViewSet(APIView):

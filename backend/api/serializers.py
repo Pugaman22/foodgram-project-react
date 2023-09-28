@@ -54,7 +54,6 @@ class CustomUserSerializer(UserSerializer):
         return obj.following.filter(user=request.user).exists()
 
 
-
 class UserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
@@ -208,16 +207,15 @@ class RecipePostSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
+
 class FollowCreateSerializer(serializers.ModelSerializer):
     def validate_author_id(self, author_id):
-        # этот метод не вызывается
-        # не смог разобраться, почему 
         print("validate_author_id", author_id)
         return author_id
-    
+
     def validate(self, data):
         print("validate", data.keys())
-        author_id = self.context["author_id"] 
+        author_id = self.context["author_id"]
         request = self.context["request"]
         if author_id == request.user.id:
             raise serializers.ValidationError(
@@ -227,7 +225,8 @@ class FollowCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields=('author_id',)
+        fields = ('author_id',)
+
 
 class CurrentUserSerializer(UserSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
@@ -283,8 +282,6 @@ class SubscribeListSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         return CurrentUserSerializer.get_is_subscribed(self, obj.author)
-
-
 
 
 class SubscribeSerializer(serializers.ModelSerializer):

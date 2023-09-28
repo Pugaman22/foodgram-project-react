@@ -1,22 +1,7 @@
-# from django_filters import rest_framework as filters
-# from rest_framework.filters import SearchFilter
-
 from django_filters.rest_framework import FilterSet, filters
-from rest_framework.filters import SearchFilter
-
 from recipes.models import PurchasingList, Recipe, Ingredient
 
 
-
-# class IngredientFilter(SearchFilter):
-#     """Поиск ингредиентов по названию."""
-#     search_param = 'name'
-
-#     class Meta:
-#         model = Ingredient
-#         fields = ('name',)
-
-        
 class IngredientFilter(FilterSet):
     name = filters.CharFilter(lookup_expr='istartswith')
 
@@ -57,5 +42,3 @@ class RecipeFilter(FilterSet):
         fields = (
             'author', 'tags', 'is_favorited', 'is_in_shopping_cart'
         )
-
-

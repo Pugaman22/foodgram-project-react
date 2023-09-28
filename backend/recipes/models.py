@@ -53,7 +53,7 @@ class Ingredient(models.Model):
 class RecipeManager(models.Manager):
 
     def get_queryset(self):
-        qs = super().get_queryset() 
+        qs = super().get_queryset()
         return qs.select_related(
             'author').prefetch_related('tags')
 
