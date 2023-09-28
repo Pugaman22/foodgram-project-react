@@ -1,9 +1,31 @@
-from django_filters import rest_framework as filters
-from recipes.models import PurchasingList, Recipe
+# from django_filters import rest_framework as filters
+# from rest_framework.filters import SearchFilter
+
+from django_filters.rest_framework import FilterSet, filters
 from rest_framework.filters import SearchFilter
 
+from recipes.models import PurchasingList, Recipe, Ingredient
 
-class RecipeFilter(filters.FilterSet):
+
+
+# class IngredientFilter(SearchFilter):
+#     """Поиск ингредиентов по названию."""
+#     search_param = 'name'
+
+#     class Meta:
+#         model = Ingredient
+#         fields = ('name',)
+
+        
+class IngredientFilter(FilterSet):
+    name = filters.CharFilter(lookup_expr='istartswith')
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
+
+
+class RecipeFilter(FilterSet):
     author = filters.CharFilter(
         field_name='author__id',
     )
@@ -37,5 +59,3 @@ class RecipeFilter(filters.FilterSet):
         )
 
 
-class IngredientFilter(SearchFilter):
-    search_param = 'name'
