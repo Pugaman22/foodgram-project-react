@@ -192,7 +192,7 @@ class RecipePostSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        ingredients = validated_data.pop('ingredients')
+        ingredients = validated_data.pop('ingredients_list')
         tags = validated_data.pop('tags')
         TagsRecipe.objects.filter(recipe=instance).delete()
         IngredientsRecipe.objects.filter(recipe=instance).delete()
