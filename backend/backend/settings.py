@@ -133,3 +133,5 @@ DJOSER = {
     },
     'HIDE_USERS': False,
 }
+
+CSRF_TRUSTED_ORIGINS = ['https://158.160.8.118']
