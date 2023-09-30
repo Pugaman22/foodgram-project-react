@@ -78,7 +78,7 @@ class PurchasingListViewSet(RelationBaseViewSet):
 
 
 class SubscribeListView(ListAPIView):
-    """Список покупок"""
+    """Подписки"""
     serializer_class = SubscribeListSerializer
     permission_classes = (IsAuthenticated,)
 

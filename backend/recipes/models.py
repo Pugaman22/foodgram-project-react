@@ -14,7 +14,7 @@ class Tag(models.Model):
         unique=True,
         verbose_name='tag name',
     )
-    colour = ColorField(
+    color = ColorField(
         unique=True,
         verbose_name='tag colour',
     )
