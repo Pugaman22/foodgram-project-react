@@ -58,15 +58,21 @@ class RecipeManager(models.Manager):
             'author').prefetch_related('tags')
 
     def fill_favs_and_in_cart(self, user):
-        favorited = Favorite.objects.filter(
-            recipe=OuterRef('pk')
-        )
-        in_cart = PurchasingList.objects.filter(
-            recipe=OuterRef('pk')
-        )
-        return self.get_queryset().annotate(
-            is_favorited=Exists(favorited)).annotate(
-                is_in_shopping_cart=Exists(in_cart))
+        if user.is_authenticated:
+            favorited = Favorite.objects.filter(
+                user=user,
+                recipe=OuterRef('pk')
+            )
+            in_cart = PurchasingList.objects.filter(
+                user=user,
+                recipe=OuterRef('pk')
+            )
+            return self.get_queryset().annotate(
+                is_favorited=Exists(favorited)).annotate(
+                    is_in_shopping_cart=Exists(in_cart))
+
+        else:
+            return self.get_queryset()
 
 
 class Recipe(models.Model):
@@ -129,7 +135,7 @@ class IngredientsRecipe(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE,
-        related_name='ingredients_list',
+        related_name='recipes_list',
         verbose_name='description'
     )
     recipe = models.ForeignKey(
@@ -139,7 +145,7 @@ class IngredientsRecipe(models.Model):
         verbose_name='Recipe',
     )
     amount = models.SmallIntegerField(
-        validators=[MinValueValidator(1, message='Minimaum value is 1!',)],
+        validators=[MinValueValidator(1, message='Minimum value is 1!',)],
         verbose_name='Ingredient quantity',
     )
 
