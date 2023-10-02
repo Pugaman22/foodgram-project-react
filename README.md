@@ -17,13 +17,9 @@ Python
 
   ```cd infra```
 ---
-  Admin
-
-  password: 123andy1123
+  сайт доступен по ссылке https://foodgrameats.ddns.net
   
-  login: andy1
+  Админка: admin, 1234
 
-  доступен по ip: https://158.160.8.118/
-  
-oleg@mail.ru
-123oleg123
+  user1: oleg@mail.ru 123oleg123
+  user2: den@mail.ru 123den123
